@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 import AppWrapper from './components/AppWrapper'
 import SettingsFrontend from './SettingsFrontend'
+import context from '/src/context'
 
 
 const ProjectFrontend = () => {
@@ -23,6 +24,8 @@ const App = () => {
       setAddonContext(event.data)
       const accessToken = event.data.accessToken
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+      context.addonName = event.data.addonName
+      context.addonVersion = event.data.addonVersion
     }
     window.addEventListener("message", handleMessage, false)
     return () => {

@@ -1,12 +1,17 @@
+import os
+import aiofiles
+
 from typing import Any, Type
 
-from fastapi import Depends
+from fastapi import Depends, Request, Response
 
 from ayon_server.addons import BaseServerAddon
-from ayon_server.api.dependencies import dep_current_user, dep_project_name
-from ayon_server.entities import FolderEntity, UserEntity
-from ayon_server.exceptions import NotFoundException
+from ayon_server.api.dependencies import dep_current_user
+from ayon_server.entities import UserEntity
+from ayon_server.events import dispatch_event, update_event
+from ayon_server.exceptions import AyonException, BadRequestException
 from ayon_server.lib.postgres import Postgres
+from ayon_server.types import validate_name
 
 from .settings import ImportSettings
 
@@ -21,21 +26,75 @@ class OpenPypeImportAddon(BaseServerAddon):
     # services = {"SplinesReticulator": {"image": "bfirsh/reticulate-splines"}}
 
     def initialize(self):
-        return
-        self.add_endpoint(
-            "get-random-folder/{project_name}",
-            self.get_random_folder,
-            method="GET",
-        )
+        self.add_endpoint("import", self.import_project, method="POST")
 
     async def setup(self):
         """Setup method is called after the addon is registered"""
         return
 
-    async def get_random_folder(
+    async def import_project(
         self,
+        request: Request,
         user: UserEntity = Depends(dep_current_user),
-        project_name: str = Depends(dep_project_name),
-    ):
+    ) -> Response:
+        """Import project from OpenPype"""
 
-        return {}
+        project_name = request.headers.get("X-Ayon-Project-Name")
+        anatomy_preset = request.headers.get("X-Ayon-Anatomy-Preset")
+
+        if not project_name:
+            raise BadRequestException("Missing project name")
+
+        validate_name(project_name)
+
+        anatomy_preset = anatomy_preset or "_"
+        if anatomy_preset != "_":
+            res = await Postgres.fech(
+                "SELECT name FROM anatomy_presets WHERE name = $1",
+                anatomy_preset,
+            )
+            if not res:
+                raise BadRequestException("Invalid anatomy preset")
+
+        if self.get_private_dir() is None:
+            raise AyonException("Private dir does not exist")
+
+        event_id = await dispatch_event(
+            "openpype_import.upload",
+            user=user.name,
+            description="Import project from OpenPype",
+            summary={"anatomy_preset": anatomy_preset},
+            project=project_name,
+            finished=False,
+        )
+
+        target_path = os.path.join(self.get_private_dir(), str(event_id))
+
+        i = 0
+        try:
+            async with aiofiles.open(target_path, "wb") as f:
+                async for chunk in request.stream():
+                    i += len(chunk)
+                    await f.write(chunk)
+        except Exception as e:
+            print(e)
+            await update_event(
+                event_id,
+                status="failed",
+                description="Failed to upload project file",
+            )
+
+            try:
+                os.remove(target_path)
+            except Exception:
+                pass
+
+            raise AyonException("Failed to upload project file")
+
+        await update_event(
+            event_id,
+            status="finished",
+            summary={},
+        )
+
+        return Response(status_code=200)
