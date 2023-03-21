@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 const AppWrapper = styled.div`
   display: flex;
+  gap: 8px;
   flex-direction: row;
   position: absolute;
   top: 0;

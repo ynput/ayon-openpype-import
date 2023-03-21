@@ -8,6 +8,7 @@ import { Dialog } from 'primereact/dialog'
 import AppWrapper from './components/AppWrapper'
 import UploadFile from './components/FileUpload'
 import AnatomyPresetDropdown from './components/AnatomyPresetDropdown'
+import StatusTable from './StatusTable'
 import context from './context'
 
 
@@ -118,7 +119,7 @@ const ImportForm = () => {
           'X-Ayon-Anatomy-Preset': anatomyPreset,
         },
       }) 
-      .then((res) => {
+      .then(() => {
         setProcessState({
           projectName,
           progress: 100,
@@ -127,6 +128,7 @@ const ImportForm = () => {
         })
       })
       .catch((err) => {
+        console.error(err)
         setProcessState({
           projectName,
           progress: 100,
@@ -141,9 +143,6 @@ const ImportForm = () => {
       <UploadFile files={files} setFiles={setFiles} validExtensions={["zip"]}/>
       {processState && <ProcessDialog {...processState} onHide={()=>setProcessState(null)}/> }
       <FormLayout>
-        <FormRow label="Project name">
-          <InputText value={projectName} onChange={e => setProjectName(e.target.value)}/>
-        </FormRow>
         <FormRow label="Anatomy preset">
           <AnatomyPresetDropdown 
             value={anatomyPreset} 
@@ -173,9 +172,7 @@ const SettingsFrontend = () => {
   return (
     <AppWrapper>
       <ImportForm/>
-      <div style={{flex: 1}}>
-        here will be table with enqueued files
-      </div>
+      <StatusTable />
     </AppWrapper>
   )
 }

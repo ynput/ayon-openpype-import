@@ -17,7 +17,7 @@ from .settings import ImportSettings
 
 
 class OpenPypeImportAddon(BaseServerAddon):
-    name = "op3import"
+    name = "openpype_import"
     title = "OpenPype import"
     version = "1.0.0"
     settings_model: Type[ImportSettings] = ImportSettings
@@ -42,14 +42,18 @@ class OpenPypeImportAddon(BaseServerAddon):
         project_name = request.headers.get("X-Ayon-Project-Name")
         anatomy_preset = request.headers.get("X-Ayon-Anatomy-Preset")
 
+        # This is not a real project name.
+        # it is just a name of the file that is being uploaded,
+        # so we can display it in the UI. Import service will
+        # update the event later, when the project is actually
+        # parsed and imported.
+
         if not project_name:
             raise BadRequestException("Missing project name")
 
-        validate_name(project_name)
-
         anatomy_preset = anatomy_preset or "_"
         if anatomy_preset != "_":
-            res = await Postgres.fech(
+            res = await Postgres.fetch(
                 "SELECT name FROM anatomy_presets WHERE name = $1",
                 anatomy_preset,
             )
@@ -62,7 +66,7 @@ class OpenPypeImportAddon(BaseServerAddon):
         event_id = await dispatch_event(
             "openpype_import.upload",
             user=user.name,
-            description="Import project from OpenPype",
+            description="Uploading a project file",
             summary={"anatomy_preset": anatomy_preset},
             project=project_name,
             finished=False,
@@ -94,6 +98,7 @@ class OpenPypeImportAddon(BaseServerAddon):
         await update_event(
             event_id,
             status="finished",
+            description="Project file uploaded",
             summary={},
         )
 
