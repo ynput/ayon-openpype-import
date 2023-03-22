@@ -140,7 +140,13 @@ const FileUpload = ({files, setFiles, mode='single', validExtensions=null}) => {
       return (
         <>
           <span>{files.length} files selected</span>
-          <button onClick={() => setFiles([])}>clear</button>
+          <button 
+            onClick={() => {
+              setFiles(null)
+              inputRef.current.value = null
+            }}
+          >clear
+          </button>
         </>
       )
     } else {

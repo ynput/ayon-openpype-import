@@ -5,6 +5,7 @@ import {useState, useEffect} from 'react'
 import { Section, TablePanel } from '@ynput/ayon-react-components'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
+import InlineSpinner from './components/InlineSpinner'
 
 const StatusTable = () => {
   const [events, setEvents] = useState([])
@@ -62,6 +63,22 @@ const StatusTable = () => {
     loadEvents() 
   }, [])
 
+  const statusBodyTemplate = (rowData) => {
+
+    let content = null
+    if (['in_progress', 'pending', 'restarted'].includes(rowData.status)) 
+      content = <InlineSpinner />
+    else if (['failed', 'aborted'].includes(rowData.status))
+      content =  <i class="pi pi-cross"></i>
+    else
+      content = <i class="pi pi-check"></i>
+
+    return (
+      <div style={{marginLeft: 8}}>
+        {content}
+      </div>
+    )
+  }
 
   return (
     <Section style={{flexGrow: 1}}>
@@ -74,13 +91,11 @@ const StatusTable = () => {
             selectionMode="single"
             resizableColumns
           >
-            <Column field="topic" header="Topic"/>
+            <Column field="id" style={{ width: 30}} body={statusBodyTemplate}/>
             <Column field="description" header="Description" />
-            <Column field="status" header="Status"/>
-            <Column field="project" header="Project"/>
-            <Column field="user" header="User"/>
-            <Column field="createdAt" header="Created at"/>
-            <Column field="updatedAt" header="Updated at"/>
+            <Column field="project" header="Project" style={{width: 200}}/>
+            <Column field="user" header="User" style={{width: 200}}/>
+            <Column field="createdAt" header="Created at" style={{width: 300}}/>
           </DataTable>
       </TablePanel>
     </Section>

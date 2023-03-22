@@ -4,6 +4,7 @@ import aiofiles
 from typing import Any, Type
 
 from fastapi import Depends, Request, Response
+from nxtools import slugify
 
 from ayon_server.addons import BaseServerAddon
 from ayon_server.api.dependencies import dep_current_user
@@ -11,7 +12,6 @@ from ayon_server.entities import UserEntity
 from ayon_server.events import dispatch_event, update_event
 from ayon_server.exceptions import AyonException, BadRequestException
 from ayon_server.lib.postgres import Postgres
-from ayon_server.types import validate_name
 
 from .settings import ImportSettings
 
@@ -23,7 +23,7 @@ class OpenPypeImportAddon(BaseServerAddon):
     settings_model: Type[ImportSettings] = ImportSettings
 
     frontend_scopes: dict[str, Any] = {"settings": {}}
-    # services = {"SplinesReticulator": {"image": "bfirsh/reticulate-splines"}}
+    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:latest"}}
 
     def initialize(self):
         self.add_endpoint("import", self.import_project, method="POST")
@@ -59,6 +59,8 @@ class OpenPypeImportAddon(BaseServerAddon):
             )
             if not res:
                 raise BadRequestException("Invalid anatomy preset")
+
+        project_name = slugify(project_name, separator="_")
 
         if self.get_private_dir() is None:
             raise AyonException("Private dir does not exist")
