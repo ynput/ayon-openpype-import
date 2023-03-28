@@ -2,11 +2,10 @@ import axios from 'axios'
 import styled from 'styled-components'
 
 import { useState, useEffect, useMemo } from 'react'
-import { FormLayout, FormRow, Panel, Section, Button } from '@ynput/ayon-react-components'
+import { FormLayout, FormRow, Panel, Section, Button, FileUpload } from '@ynput/ayon-react-components'
 import { Dialog } from 'primereact/dialog'
 
 import AppWrapper from './components/AppWrapper'
-import UploadFile from './components/FileUpload'
 import AnatomyPresetDropdown from './components/AnatomyPresetDropdown'
 import StatusTable from './StatusTable'
 import context from './context'
@@ -157,7 +156,7 @@ const ImportForm = () => {
   return (
     <Section style={{maxWidth: 400}}>
       <Panel style={{alignItems: "center", gap: 16}}>
-      <UploadFile files={files} setFiles={setFiles} validExtensions={["zip"]} mode='multiple'/>
+      <FileUpload files={files} setFiles={setFiles} validExtensions={["zip"]} mode='multiple'/>
       {processState && <ProcessDialog {...processState} onHide={()=>setProcessState(null)}/> }
       <FormLayout>
         <FormRow>

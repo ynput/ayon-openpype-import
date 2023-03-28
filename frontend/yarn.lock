@@ -440,10 +440,10 @@
     magic-string "^0.27.0"
     react-refresh "^0.14.0"
 
-"@ynput/ayon-react-components@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@ynput/ayon-react-components/-/ayon-react-components-0.1.9.tgz#51b64a35868d7987473e532b7b7a5cfbe2825e61"
-  integrity sha512-aKQGOAgtt+SzWWAf+i2t59Otv3Ij+YZmAMsS2m9yITC8dHziS0z03tdE2ACoPkeRMO5zaeOqniZp03z+2Xlemg==
+"@ynput/ayon-react-components@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@ynput/ayon-react-components/-/ayon-react-components-0.2.0.tgz#75995ec8baae8972d890576b7ccf4aae79f8e97d"
+  integrity sha512-cKfOqsZbDVgE0WJgLvBjvJmPtl3j7FFVIeiT5AD2Sw4aCi+ro3wYt8vNdOozRcIg7+AtxihbLWT/1klzbczhUQ==
   dependencies:
     react "^18.2.0"
     react-dom "^18.2.0"
