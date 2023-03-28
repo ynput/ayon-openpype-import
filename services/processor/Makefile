@@ -6,6 +6,9 @@ build:
 clean:
 	docker rmi $(image)
 
+dist: build
+	docker push $(image)
+
 dev:
 	docker run --rm -ti \
 		-v $(CURDIR):/service \

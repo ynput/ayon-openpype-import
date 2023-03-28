@@ -1,7 +1,7 @@
 import axios from 'axios'
 import styled from 'styled-components'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { FormLayout, FormRow, Panel, Section, Button } from '@ynput/ayon-react-components'
 import { Dialog } from 'primereact/dialog'
 
@@ -41,7 +41,7 @@ const formatFileSize = (bytes) => {
   return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
 }
 
-const ProcessDialog = ({projectName, progress, message, isError, onHide}) => {
+const ProcessDialog = ({files, fileIndex, fileProgress, overalProgress, errors, onHide}) => {
 
   const handleOnHide = () => {
     if (!message)
@@ -49,15 +49,39 @@ const ProcessDialog = ({projectName, progress, message, isError, onHide}) => {
     onHide()
   }
 
-  return (
-    <Dialog visible onHide={handleOnHide} style={{minWidth: 400, mihHeight: 300}}>
-      <h2>Importing project</h2>
+  const errorsComponent = useMemo(() => {
+    return (
+    <ul>
+    {(errors || []).map((error) => (
+      <li key={error}>{error}</li>
+    ))}
+    </ul>)
+  }, [errors])
 
-      <p className={isError ? 'error' : ''}>
-        {message || `Importing project ${projectName}...`}
+
+  const currentFileName = files[fileIndex]?.name
+
+  return (
+    <Dialog 
+      visible 
+      header="Project import"
+      onHide={handleOnHide} 
+      style={{minWidth: 400, mihHeight: 300}}
+    >
+
+
+      <p className={errors?.length ? 'error' : ''}>
+        Importing {currentFileName} ({ fileIndex + 1 }/{files.length})
+        <Progress value={fileProgress || 0} />
       </p>
 
-      <Progress value={progress || 0} />
+      <p>
+        <Progress value={overalProgress || 0} />
+      </p>
+
+      {errorsComponent}
+
+
     </Dialog>
   )
 }
@@ -65,8 +89,6 @@ const ProcessDialog = ({projectName, progress, message, isError, onHide}) => {
 
 const ImportForm = () => {
   const [files, setFiles] = useState(null)
-  const [projectName, setProjectName] = useState('')
-  const [anatomyPreset, setAnatomyPreset] = useState('_')
   const [processState, setProcessState] = useState(null)
   
   const abortController = new AbortController()
@@ -74,71 +96,73 @@ const ImportForm = () => {
   const cancelTokenSource = cancelToken.source()
 
 
-  useEffect(() => {
-    if (!projectName){
-      const fileName = files?.[0]?.name
-      if (fileName)
-        setProjectName(fileName.split('.').slice(0, -1).join('.'))
-    }
-  }, [files])
-
   const handleProgress = (e) => {
-    setProcessState(() => ({
-      ...processState,
-      progress: Math.round((e.loaded * 100) / e.total),
-    }))
+
+    setProcessState((processState) => {
+        const totalSize = files.reduce((acc, file) => acc + file.size, 0)
+        const processedFiles = processState.fileIndex ? files.slice(0, processState.fileIndex) : []
+        const processedFilesSize = processedFiles.reduce((acc, file) => acc + file.size, 0)
+        const fileProgress = Math.round((e.loaded * 100) / e.total)
+        const overalProgress = Math.round(((processedFilesSize + fileProgress) * 100) / totalSize)
+
+        return {
+          ...processState,
+          fileProgress,
+          overalProgress,
+        }
+    })
   }
 
   const onSubmit = async () => {
     setProcessState({
-      projectName,
-      progress:0,
-      message: null,
-      isError: false,
+      files,
+      fileIndex: 0,
+      message: 0,
+      overalProgress: 0,
+      errors: [],
     })
 
     const url = `/api/addons/${context.addonName}/${context.addonVersion}/import`
-    await axios
-      .post(url, files[0], {
-        signal: abortController.signal,
-        cancelToken: cancelTokenSource.token,
-        onUploadProgress: handleProgress,
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          'X-Ayon-Project-Name': projectName,
-          'X-Ayon-Anatomy-Preset': anatomyPreset,
-        },
-      }) 
-      .then(() => {
-        setProcessState(null)
-        setFiles(null)
+
+
+    for (const file of files) {
+
+      await axios
+        .post(url, files[0], {
+          signal: abortController.signal,
+          cancelToken: cancelTokenSource.token,
+          onUploadProgress: handleProgress,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'X-Ayon-Project-Name': file.name,
+          },
+        }) 
+
+      setProcessState((processState) => {
+
+        return {
+          ...processState,
+          fileIndex: processState.fileIndex + 1,
+        }
+
       })
-      .catch((err) => {
-        console.error(err)
-        setProcessState({
-          projectName,
-          progress: 100,
-          message: 'Project import failed',
-          isError: true,
-        })
-      })
+
+
+    } // for files
+    setProcessState(null)
+    setFiles(null)
+
   }
  
   return (
     <Section style={{maxWidth: 400}}>
       <Panel style={{alignItems: "center", gap: 16}}>
-      <UploadFile files={files} setFiles={setFiles} validExtensions={["zip"]}/>
+      <UploadFile files={files} setFiles={setFiles} validExtensions={["zip"]} mode='multiple'/>
       {processState && <ProcessDialog {...processState} onHide={()=>setProcessState(null)}/> }
       <FormLayout>
-        <FormRow label="Anatomy preset">
-          <AnatomyPresetDropdown 
-            value={anatomyPreset} 
-            onChange={setAnatomyPreset}
-          />
-        </FormRow>
         <FormRow>
           <Button 
-            label="Enqueue" 
+            label="Import" 
             icon="library_add" 
             onClick={onSubmit}
             disabled={!files?.length}
@@ -150,7 +174,7 @@ const ImportForm = () => {
       <Panel style={{ textAlign: "left", flexGrow: 1}}>
         <h2>{context.addonName} {context.addonVersion}</h2>
         <p>
-          Upload a database dump from OpenPype 3. Project will be handled by a background process.
+          Import a database dump from OpenPype 3. Deployment to Ayon will be handled by a background process
         </p>
         <p>
           Database dump must be a zip file containing a JSON file <strong>project.json</strong> and optionally
