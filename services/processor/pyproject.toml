@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ayon-openpype-import-processor"
-version = "1.0.0"
+version = "1.0.1"
 description = ""
 authors = ["Martastain <martas@imm.cz>"]
 
@@ -9,7 +9,7 @@ python = "^3.10"
 pydantic = "^1.10.5"
 rich = "^13.3.1"
 nxtools = "^1.6"
-ayclient = { git = "https://github.com/martastain/ayclient.git", branch = "master" }
+requests = "^2.28"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

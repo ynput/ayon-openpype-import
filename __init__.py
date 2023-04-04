@@ -23,7 +23,7 @@ class OpenPypeImportAddon(BaseServerAddon):
     settings_model: Type[ImportSettings] = ImportSettings
 
     frontend_scopes: dict[str, Any] = {"settings": {}}
-    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:latest"}}
+    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:1.0.1"}}
 
     def initialize(self):
         self.add_endpoint("import", self.import_project, method="POST")

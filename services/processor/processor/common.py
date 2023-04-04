@@ -25,27 +25,27 @@ class Config(BaseSettings):
         ...,
         title="API key",
         description="API key to access the Ayon API",
-        env="ay_api_key",
+        env="ayon_api_key",
     )
     server_url: str = Field(
         "http://localhost:5000",
         title="Ayon server host",
         description="URL of the running ayon instance",
-        env="ay_server_url",
+        env="ayon_server_url",
     )
     addon_name: str = Field(
         ...,
         title="Addon name",
-        env="ay_addon_name",
+        env="ayon_addon_name",
     )
     addon_version: str = Field(
         ...,
         title="Addon version",
-        env="ay_addon_version",
+        env="ayon_addon_version",
     )
     service_name: str = Field(
         default_factory=socket.gethostname,
-        env="ay_service_name",
+        env="ayon_service_name",
     )
 
     force: bool = Field(
