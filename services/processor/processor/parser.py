@@ -274,6 +274,7 @@ def create_sqlite_db(source_path: str, sqlite_path: str) -> str:
             """
         )
 
+
         logging.info(f"Inserted {i} rows into SQLite database")
         logging.info(f"SQLite database created {time.time() - start_time:.2f}s")
 

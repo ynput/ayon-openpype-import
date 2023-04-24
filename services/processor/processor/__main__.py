@@ -100,7 +100,7 @@ def main():
         project_name = source_event["project"]
         user_name = source_event["user"]
 
-        res = ayon.update_event(
+        ayon.update_event(
             source_event_id,
             project=project_name,
             user=user_name,
@@ -118,8 +118,10 @@ def main():
         try:
             process(source_event_id, target_event_id)
         except Exception as e:
+            print("Error while processing")
             print(e)
-            ayon.update_event(res["id"], status="error", description=str(e))
+            ayon.update_event(target_event_id, status="failed", description=str(e))
+            continue
 
         ayon.update_event(
             target_event_id,

@@ -83,7 +83,7 @@ def folders_by_parent(
                 "data": {
                     "folderId": row[0],
                     "name": task_name,
-                    "taskType": task_data["type"],
+                    "taskType": task_data["type"].lower(),
                     "status": config.default_status,
                 },
             }

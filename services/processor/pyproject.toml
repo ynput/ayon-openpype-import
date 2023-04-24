@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ayon-openpype-import-processor"
-version = "1.0.1"
+version = "1.0.0"
 description = ""
 authors = ["Martastain <martas@imm.cz>"]
 

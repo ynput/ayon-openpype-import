@@ -9,12 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ynput/ayon-react-components": "^0.2.0",
+    "@ynput/ayon-react-components": "^0.3.4",
     "axios": "^1.3.4",
     "primeicons": "^6.0.1",
     "primereact": "^9.2.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "styled-components": "^5.3.10"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",

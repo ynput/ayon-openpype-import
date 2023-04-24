@@ -1,4 +1,5 @@
 import os
+import json
 import sqlite3
 import time
 import logging
@@ -36,10 +37,19 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
 
     assert folder_types, "No folder types found in database"
 
+    # Force load task types
+
+    db.execute(" SELECT data FROM entities WHERE type = 'asset'")
+    used_task_types = set()
+    for row in db.fetchall():
+        data = json.loads(row[0])
+        for task_name, task in data.get("tasks", {}).items():
+            used_task_types.add(task["type"].lower())
+
     # Deploy project
     logging.info("Deploying project")
 
-    project = parse_project(*project_row, folder_types)
+    project = parse_project(*project_row, folder_types, used_task_types)
     project_name = project["name"]
 
     try:
@@ -58,7 +68,7 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
             return 0
         res = ayon.post(
             f"projects/{project_name}/operations",
-            json={"operations": ops},
+            json={"operations": ops, "canFail": True},
         )
         if not (res["success"]):
             for res_op in res["operations"]:
