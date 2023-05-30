@@ -11,7 +11,7 @@ from .project import parse_project
 from .common import mongoid2uuid
 from .ayon import ayon
 from .folders import folders_by_parent
-from .subsets import get_subsets
+from .products import get_products
 from .versions import get_versions, get_hero_versions
 from .representations import get_representations
 
@@ -138,9 +138,9 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
     count = deploy_folders(None)
     logging.info(f"Deployed {count} folders and tasks")
 
-    logging.info("Deploying subsets")
-    count = bach_process_ops(get_subsets(conn))
-    logging.info(f"Deployed {count} subsets")
+    logging.info("Deploying products")
+    count = bach_process_ops(get_products(conn))
+    logging.info(f"Deployed {count} products")
 
     logging.info("Deploying versions")
     count = bach_process_ops(get_versions(conn, thumbnails))

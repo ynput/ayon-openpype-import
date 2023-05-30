@@ -1,4 +1,4 @@
-image := ynput/ayon-openpype-import:latest
+image := ynput/ayon-openpype-import:0.2.0
 
 build:
 	docker build -t $(image)  . 

@@ -5,7 +5,7 @@ from typing import Generator, Any
 from .common import config
 
 
-def get_subsets(conn: sqlite3.Connection) -> Generator[dict[str, Any], None, None]:
+def get_products(conn: sqlite3.Connection) -> Generator[dict[str, Any], None, None]:
     db = conn.cursor()
     db.execute(
         """
@@ -36,12 +36,12 @@ def get_subsets(conn: sqlite3.Connection) -> Generator[dict[str, Any], None, Non
 
         yield {
             "type": "create",
-            "entityType": "subset",
+            "entityType": "product",
             "entityId": subset_id,
             "data": {
                 "name": subset_name,
                 "folderId": parent_id,
-                "family": family,
+                "productType": family,
                 "status": config.default_status,
             },
         }

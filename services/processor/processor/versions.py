@@ -28,7 +28,7 @@ def parse_version(
         "entityType": "version",
         "entityId": version_id,
         "data": {
-            "subsetId": parent_id,
+            "productId": parent_id,
             "thumbnailId": thumbnail_id,
             "version": version_number,
             "attrib": attributes,
