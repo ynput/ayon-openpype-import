@@ -40,13 +40,18 @@ def process(source_event_id: str, target_event_id: str) -> None:
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(source_dir)
 
-    source_path = os.path.join(source_dir, "project.json")
+
+    for fname in ["project.json", "database.json"]:
+        source_path = os.path.join(source_dir, fname)
+        if os.path.isfile(source_path):
+            break
+    else:
+        raise Exception("Project file not found")
+
     sqlite_path = os.path.join(source_dir, "project.db")
     thumbnail_dir = os.path.join(source_dir, "thumbnails")
     if not os.path.isdir(thumbnail_dir):
         thumbnail_dir = None
-
-    assert os.path.isfile(source_path), "Source file does not exist"
 
     ayon.update_event(
         target_event_id,
