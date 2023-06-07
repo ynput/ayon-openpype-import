@@ -99,7 +99,6 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
     # Deploy thumbnails (stupid, but we need them first)
 
     thumbnails = {}
-    print(thumbnail_dir)
     if thumbnail_dir:
         for path in os.listdir(thumbnail_dir):
             if path.endswith(".jpg"):

@@ -9,7 +9,7 @@ from .parser import create_sqlite_db
 from .deploy import deploy_project
 
 
-def process(source_event_id: str, target_event_id: str) -> None:
+def process(source_event_id: str, target_event_id: str, user_name: str) -> None:
     zip_path = "/tmp/source.zip"
     source_dir = "/tmp/project"
 
@@ -23,6 +23,7 @@ def process(source_event_id: str, target_event_id: str) -> None:
     ayon.update_event(
         target_event_id,
         status="in_progress",
+        user=user_name,
         decsription="Downloading source file",
     )
 
@@ -31,7 +32,12 @@ def process(source_event_id: str, target_event_id: str) -> None:
         assert os.path.getsize(zip_path) > 0, "Source file is empty"
     except Exception as e:
         print(e)
-        ayon.update_event(target_event_id, status="error", description=str(e))
+        ayon.update_event(
+            target_event_id,
+            status="error",
+            description=str(e),
+            user=user_name,
+        )
         return
 
     if not os.path.exists(source_dir):
@@ -39,7 +45,6 @@ def process(source_event_id: str, target_event_id: str) -> None:
 
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(source_dir)
-
 
     for fname in ["project.json", "database.json"]:
         source_path = os.path.join(source_dir, fname)
@@ -57,6 +62,7 @@ def process(source_event_id: str, target_event_id: str) -> None:
         target_event_id,
         status="in_progress",
         description="Creating intermediate database",
+        user=user_name,
     )
 
     actual_project_name = create_sqlite_db(source_path, sqlite_path)
@@ -66,15 +72,17 @@ def process(source_event_id: str, target_event_id: str) -> None:
     # Update events with actual project name
 
     ayon.update_event(
+        source_event_id,
+        project=actual_project_name,
+        user=user_name,
+    )
+
+    ayon.update_event(
         target_event_id,
         status="in_progress",
         project=actual_project_name,
         description="Deploying project",
-    )
-
-    ayon.update_event(
-        source_event_id,
-        project=actual_project_name,
+        user=user_name,
     )
 
     deploy_project(sqlite_path, thumbnail_dir)
@@ -106,13 +114,6 @@ def main():
         user_name = source_event["user"]
 
         ayon.update_event(
-            source_event_id,
-            project=project_name,
-            user=user_name,
-            status="finished",
-        )
-
-        ayon.update_event(
             target_event_id,
             project=project_name,
             user=user_name,
@@ -121,7 +122,7 @@ def main():
         )
 
         try:
-            process(source_event_id, target_event_id)
+            process(source_event_id, target_event_id, user_name)
         except Exception as e:
             print("Error while processing")
             print(e)
@@ -131,6 +132,7 @@ def main():
         ayon.update_event(
             target_event_id,
             status="finished",
+            user=user_name,
             description="Successfully imported",
         )
 
