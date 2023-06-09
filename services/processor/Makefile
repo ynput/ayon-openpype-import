@@ -1,4 +1,4 @@
-image := ynput/ayon-openpype-import:0.2.1
+image := ynput/ayon-openpype-import:0.2.2
 
 build:
 	docker build -t $(image)  . 
@@ -13,8 +13,8 @@ dev:
 	docker run --rm -ti \
 		-v $(CURDIR):/service \
 		--hostname op3import \
-		--env AYON_API_KEY=b00b567890123456789012345678iee5 \
-		--env AYON_SERVER_URL="http://172.25.0.1:5000" \
+		--env AYON_API_KEY=veryinsecurapikey \
+		--env AYON_SERVER_URL="http://192.168.5.141:5000" \
 		--env AYON_ADDON_NAME=openpype_import \
-		--env AYON_ADDON_VERSION=1.0.0 \
+		--env AYON_ADDON_VERSION=0.2.2 \
 		$(image) python -m processor

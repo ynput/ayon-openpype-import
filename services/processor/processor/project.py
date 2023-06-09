@@ -8,7 +8,7 @@ def parse_project(
     project_name: str,
     project_payload: str,
     folder_types: list[str],
-    used_task_types: set[str],
+    task_type_map: dict[str, Any],
 ) -> dict[str, Any]:
     project_data = json.loads(project_payload)
 
@@ -48,27 +48,11 @@ def parse_project(
 
     task_types = project_config.pop("tasks", {})
     for key, value in task_types.items():
-        key = key.lower()
-        try:
-            used_task_types.remove(key)
-        except KeyError:
-            pass
+        short_name = value.get("short_name", key)
+        task_type_map[key.lower()] = {"name": key, "shortName": short_name}
 
-        anatomy["task_types"].append(
-            {
-                "name": key,
-                "shortName": value.get("short_name", key),
-            }
-        )
-
-    for task_type_name in used_task_types:
-        logging.info(f"Adding non-registered task type {task_type_name}")
-        anatomy["task_types"].append(
-            {
-                "name": task_type_name,
-                "shortName": task_type_name,
-            }
-        )
+    for task_type_key, value in task_type_map.items():
+        anatomy["task_types"].append(value)
 
     # roots
 

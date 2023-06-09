@@ -494,10 +494,15 @@
     magic-string "^0.27.0"
     react-refresh "^0.14.0"
 
-"@ynput/ayon-react-components@^0.3.4":
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/@ynput/ayon-react-components/-/ayon-react-components-0.3.4.tgz#801bbac4329b564f9e9626cc5d159b4269b352b1"
-  integrity sha512-xZDhpypOXoju55tzhbOmqDF8gNPbzyPJspS6mD6AvcjhApQVQRKTLiuLOKc4E9vpV3iVt2qzRAcee36VP/amFA==
+"@ynput/ayon-react-addon-provider@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@ynput/ayon-react-addon-provider/-/ayon-react-addon-provider-0.0.6.tgz#ebb1bbaeb7bdb3db80639638d6828c2892dff215"
+  integrity sha512-/8V7p6euVtm/myb8ckUW2WBHkLK348TvaPpTiCkquKAbYetwbmPluKCQJVJcQg4lKw3PLcRKt8M/29DcHr0GDQ==
+
+"@ynput/ayon-react-components@^0.3.15":
+  version "0.3.15"
+  resolved "https://registry.yarnpkg.com/@ynput/ayon-react-components/-/ayon-react-components-0.3.15.tgz#fe086d5c6c2cbee15f4612c25f9f63006f4a0bae"
+  integrity sha512-vKckQ67q9VBsqxdp9OowhA8iHSd6oVTsUNeWklVU46dOeoUQqMyPgGKjv0Oeoe3RANZoCP7E0ezE1oQX1kWtqw==
 
 ansi-styles@^3.2.1:
   version "3.2.1"

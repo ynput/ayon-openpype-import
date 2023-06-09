@@ -1,12 +1,16 @@
 import os
+import logging
 import time
 import shutil
+import traceback
 import zipfile
 
 from .common import config
 from .ayon import ayon
 from .parser import create_sqlite_db
 from .deploy import deploy_project
+
+from requests.exceptions import HTTPError
 
 
 def process(source_event_id: str, target_event_id: str, user_name: str) -> None:
@@ -121,19 +125,33 @@ def main():
             status="in_progress",
         )
 
+        error_msg = "Unknown error"
+        payload = None
         try:
             process(source_event_id, target_event_id, user_name)
+        except HTTPError as e:
+            # load error message from response
+            error_msg = e.response.json()["detail"]
+            logging.error(f"API error: {error_msg}")
+
         except Exception as e:
-            print("Error while processing")
-            print(e)
-            ayon.update_event(target_event_id, status="failed", description=str(e))
+            logging.exception("Error while processing")
+            error_msg = str(e)
+            payload = {"traceback": traceback.format_exc()}
+        else:
+            ayon.update_event(
+                target_event_id,
+                status="finished",
+                user=user_name,
+                description="Successfully imported",
+            )
             continue
 
         ayon.update_event(
             target_event_id,
-            status="finished",
-            user=user_name,
-            description="Successfully imported",
+            status="failed",
+            description=error_msg,
+            payload=payload,
         )
 
 

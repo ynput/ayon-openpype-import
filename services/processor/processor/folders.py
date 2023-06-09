@@ -47,6 +47,7 @@ def folders_by_parent(
     parent_id: str | None,
     conn: sqlite3.Connection,
     thumbnails=None,
+    task_type_map=None,
 ) -> Generator[dict[str, Any], None, None]:
     db = conn.cursor()
     cond = (
@@ -77,13 +78,19 @@ def folders_by_parent(
         # so we deploy the tasks as part of the folder
 
         for task_name, task_data in tasks_data.items():
+
+            task_type = task_type_map.get(task_data["type"].lower())
+            if task_type is None:
+                continue
+            task_type_name = task_type["name"]
+
             yield {
                 "type": "create",
                 "entityType": "task",
                 "data": {
                     "folderId": row[0],
                     "name": task_name,
-                    "taskType": task_data["type"].lower(),
+                    "taskType": task_type_name,
                     "status": config.default_status,
                 },
             }

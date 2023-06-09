@@ -40,16 +40,16 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
     # Force load task types
 
     db.execute(" SELECT data FROM entities WHERE type = 'asset'")
-    used_task_types = set()
+    task_type_map = {}
     for row in db.fetchall():
         data = json.loads(row[0])
         for task_name, task in data.get("tasks", {}).items():
-            used_task_types.add(task["type"].lower())
+            task_type_map[task["type"].lower()] = {"name": task_name}
 
     # Deploy project
     logging.info("Deploying project")
 
-    project = parse_project(*project_row, folder_types, used_task_types)
+    project = parse_project(*project_row, folder_types, task_type_map)
     project_name = project["name"]
 
     try:
@@ -58,6 +58,7 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
         pass
     else:
         logging.info("Deleted existing project")
+
     ayon.post("projects", json=project)
 
     # TOOOL
@@ -123,7 +124,7 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
         ops = []
         children_ids = []
         counter = 0
-        for operation in folders_by_parent(parent_id, conn, thumbnails=thumbnails):
+        for operation in folders_by_parent(parent_id, conn, thumbnails=thumbnails, task_type_map=task_type_map):
             ops.append(operation)
             if "entityId" in operation:
                 children_ids.append(operation["entityId"])

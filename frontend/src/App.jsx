@@ -1,12 +1,10 @@
 import axios from 'axios'
 import styled from 'styled-components'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useContext, useMemo } from 'react'
 import { FormLayout, FormRow, Panel, Section, Button, FileUpload } from '@ynput/ayon-react-components'
-import { Dialog } from 'primereact/dialog'
+import { AddonContext } from '@ynput/ayon-react-addon-provider'
 
-import AppWrapper from './components/AppWrapper'
-import AnatomyPresetDropdown from './components/AnatomyPresetDropdown'
 import StatusTable from './StatusTable'
 import context from './context'
 
@@ -23,6 +21,30 @@ const BaseProgress = styled.div`
     background: #3182ce;
   }
 `
+
+const Shade = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`
+
+const Dialog = styled.div`
+  background-color: #252323;
+  border-radius: 3px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1500;
+`
+
 
 const Progress = ({ value, ...props }) => {
   return (
@@ -61,13 +83,8 @@ const ProcessDialog = ({files, fileIndex, fileProgress, overalProgress, errors, 
   const currentFileName = files[fileIndex]?.name
 
   return (
-    <Dialog 
-      visible 
-      header="Project import"
-      onHide={handleOnHide} 
-      style={{minWidth: 400, mihHeight: 300}}
-    >
-
+    <Shade onClick={handleOnHide}>
+    <Dialog>
 
       <p className={errors?.length ? 'error' : ''}>
         Importing {currentFileName} ({ fileIndex + 1 }/{files.length})
@@ -80,8 +97,8 @@ const ProcessDialog = ({files, fileIndex, fileProgress, overalProgress, errors, 
 
       {errorsComponent}
 
-
     </Dialog>
+    </Shade>
   )
 }
 
@@ -93,6 +110,9 @@ const ImportForm = () => {
   const abortController = new AbortController()
   const cancelToken = axios.CancelToken
   const cancelTokenSource = cancelToken.source()
+
+  const addonName = useContext(AddonContext).addonName
+  const addonVersion = useContext(AddonContext).addonVersion
 
 
   const handleProgress = (e) => {
@@ -121,7 +141,7 @@ const ImportForm = () => {
       errors: [],
     })
 
-    const url = `/api/addons/${context.addonName}/${context.addonVersion}/import`
+    const url = `/api/addons/${addonName}/${addonVersion}/import`
 
 
     for (const file of files) {
@@ -192,15 +212,21 @@ const ImportForm = () => {
 
 
 
-const SettingsFrontend = () => {
+const App = () => {
+
+  const accessToken = useContext(AddonContext).accessToken
+
+  useEffect(() => {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+  }, [accessToken])
 
   return (
-    <AppWrapper>
+    <>
       <ImportForm/>
       <StatusTable />
-    </AppWrapper>
+    </>
   )
 }
 
 
-export default SettingsFrontend
+export default App

@@ -43,10 +43,9 @@ class Ayon:
         response = self.session.request(
             method, self.server_url + "/api/" + endpoint, **kwargs
         )
+        response.raise_for_status()
         if response.status_code in [204, 201]:
             return None
-        if not response:
-            raise Exception("Error during request", response)
         return response.json()
 
     def __getattr__(self, method: str):

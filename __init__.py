@@ -2,6 +2,7 @@ import os
 import aiofiles
 
 from typing import Any, Type
+from datetime import datetime
 
 from fastapi import Depends, Request, Response
 from nxtools import slugify
@@ -12,25 +13,85 @@ from ayon_server.entities import UserEntity
 from ayon_server.events import dispatch_event, update_event
 from ayon_server.exceptions import AyonException, BadRequestException
 from ayon_server.lib.postgres import Postgres
+from ayon_server.types import Field, OPModel
 
 from .settings import ImportSettings
+
+
+class JobSummaryModel(OPModel):
+    project: str = Field(..., title="Project name")
+    user: str = Field(..., title="User name")
+    upload_id: str = Field(..., title="Upload event ID")
+    process_id: str | None = Field(None, title="Process event ID")
+    description: str = Field(..., title="Upload description")
+    status: str = Field(..., title="Upload status")
+    updated_at: datetime = Field(..., title="Upload updated at")
 
 
 class OpenPypeImportAddon(BaseServerAddon):
     name = "openpype_import"
     title = "OpenPype import"
-    version = "0.2.1"
+    version = "0.2.2"
     settings_model: Type[ImportSettings] = ImportSettings
 
     frontend_scopes: dict[str, Any] = {"settings": {}}
-    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:0.2.1"}}
+    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:0.2.2"}}
 
     def initialize(self):
         self.add_endpoint("import", self.import_project, method="POST")
+        self.add_endpoint("list", self.list_jobs, method="GET")
 
     async def setup(self):
         """Setup method is called after the addon is registered"""
         return
+
+    async def list_jobs(self) -> list[JobSummaryModel]:
+        result = []
+        query = """
+        SELECT
+
+        u.id as upload_id,
+        p.id as process_id,
+        u.description as upload_description,
+        p.description as process_description,
+        u.status as upload_status,
+        p.status as process_status,
+        u.user_name as user,
+        u.project_name as project,
+        u.updated_at as upload_updated_at,
+        p.updated_at as process_updated_at
+
+        FROM events AS u LEFT JOIN events AS p ON u.id = p.depends_on
+
+        WHERE 
+            u.topic = 'openpype_import.upload'
+
+        ORDER BY u.creation_order DESC
+        LIMIT 30
+        """
+        async for row in Postgres.iterate(query):
+
+            description = row["process_description"] or row["upload_description"]
+            status = row["process_status"]
+            if not status:
+                if row["upload_status"] == "failed":
+                    status = "failed"
+                else:
+                    status = "in_progress"
+
+            result.append(
+                JobSummaryModel(
+                    project=row["project"],
+                    user=row["user"],
+                    upload_id=row["upload_id"],
+                    process_id=row["process_id"],
+                    description=description,
+                    status=status,
+                    updated_at=row["process_updated_at"] or row["upload_updated_at"],
+                )
+            )
+
+        return result
 
     async def import_project(
         self,
