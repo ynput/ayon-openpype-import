@@ -33,9 +33,12 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
         WHERE entity_type IS NOT NULL AND entity_type != 'Project'
         """
     )
+
     folder_types = [row[0] for row in db.fetchall()]
 
-    assert folder_types, "No folder types found in database"
+    if not folder_types:
+        logging.warning("No folder types found in database")
+        folder_types = ["Folder"]
 
     # Force load task types
 
@@ -124,7 +127,9 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
         ops = []
         children_ids = []
         counter = 0
-        for operation in folders_by_parent(parent_id, conn, thumbnails=thumbnails, task_type_map=task_type_map):
+        for operation in folders_by_parent(
+            parent_id, conn, thumbnails=thumbnails, task_type_map=task_type_map, folder_types=folder_types,
+        ):
             ops.append(operation)
             if "entityId" in operation:
                 children_ids.append(operation["entityId"])
@@ -164,15 +169,6 @@ def deploy(conn: sqlite3.Connection, thumbnail_dir: str | None = None):
 
 def deploy_project(sqlite_path: str, thumbnail_dir: str | None = None):
     assert os.path.exists(sqlite_path), "SQLite database does not exist"
-    is_error = False
     with sqlite3.connect(sqlite_path) as conn:
         run_checks(conn)
-        try:
-            deploy(conn, thumbnail_dir)
-        except AssertionError as e:
-            logging.critical(e)
-            is_error = True
-
-    if is_error:
-        print()
-        raise SystemExit(1)
+        deploy(conn, thumbnail_dir)

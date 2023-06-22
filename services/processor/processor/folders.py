@@ -6,7 +6,7 @@ from .common import config
 NOT_FOLDER_ATTRIB = ["tools_env", "avalon_mongo_id", "parents", "tasks"]
 
 
-def parse_folder(source: dict[str, Any], thumbnails) -> dict[str, Any]:
+def parse_folder(source: dict[str, Any], thumbnails, folder_types) -> dict[str, Any]:
     source_data = source["data"]
 
     payload = {
@@ -16,6 +16,12 @@ def parse_folder(source: dict[str, Any], thumbnails) -> dict[str, Any]:
         "attrib": {},
         "status": config.default_status,
     }
+
+    if not payload["folderType"]:
+        if "Folder" in folder_types:
+            payload["folderType"] = "Folder"
+        else:
+            payload["folderType"] = folder_types[0]
 
     for key, value in source_data.items():
         if key in NOT_FOLDER_ATTRIB:
@@ -48,6 +54,7 @@ def folders_by_parent(
     conn: sqlite3.Connection,
     thumbnails=None,
     task_type_map=None,
+    folder_types: list[str] = [],
 ) -> Generator[dict[str, Any], None, None]:
     db = conn.cursor()
     cond = (
@@ -72,6 +79,7 @@ def folders_by_parent(
                 "data": folder_data,
             },
             thumbnails,
+            folder_types,
         )
 
         # In OP3, tasks are stored on Assets (folders),

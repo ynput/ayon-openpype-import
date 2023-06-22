@@ -31,11 +31,11 @@ class JobSummaryModel(OPModel):
 class OpenPypeImportAddon(BaseServerAddon):
     name = "openpype_import"
     title = "OpenPype import"
-    version = "0.2.2"
+    version = "0.2.3"
     settings_model: Type[ImportSettings] = ImportSettings
 
     frontend_scopes: dict[str, Any] = {"settings": {}}
-    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:0.2.2"}}
+    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:0.2.3"}}
 
     def initialize(self):
         self.add_endpoint("import", self.import_project, method="POST")

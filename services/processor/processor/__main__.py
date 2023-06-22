@@ -38,7 +38,7 @@ def process(source_event_id: str, target_event_id: str, user_name: str) -> None:
         print(e)
         ayon.update_event(
             target_event_id,
-            status="error",
+            status="failed",
             description=str(e),
             user=user_name,
         )
@@ -93,6 +93,7 @@ def process(source_event_id: str, target_event_id: str, user_name: str) -> None:
 
 
 def main():
+    logging.info(f"Starting import processor as {config.service_name}")
     while True:
         req = {
             "sourceTopic": "openpype_import.upload",
