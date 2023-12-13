@@ -16,6 +16,7 @@ from ayon_server.lib.postgres import Postgres
 from ayon_server.types import Field, OPModel
 
 from .settings import ImportSettings
+from .version import __version__
 
 
 class JobSummaryModel(OPModel):
@@ -31,7 +32,7 @@ class JobSummaryModel(OPModel):
 class OpenPypeImportAddon(BaseServerAddon):
     name = "openpype_import"
     title = "OpenPype import"
-    version = "0.2.3"
+    version = __version__
     settings_model: Type[ImportSettings] = ImportSettings
 
     frontend_scopes: dict[str, Any] = {"settings": {}}
@@ -70,7 +71,6 @@ class OpenPypeImportAddon(BaseServerAddon):
         LIMIT 30
         """
         async for row in Postgres.iterate(query):
-
             description = row["process_description"] or row["upload_description"]
             status = row["process_status"]
             if not status:
