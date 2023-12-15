@@ -42,6 +42,12 @@ class OpenPypeImportAddon(BaseServerAddon):
         self.add_endpoint("import", self.import_project, method="POST")
         self.add_endpoint("list", self.list_jobs, method="GET")
 
+        private_dir = os.path.join(self.addon_dir, "private")
+        try:
+            os.makedirs(private_dir, exist_ok=True)
+        except Exception as e:
+            raise AyonException("Failed to create private dir") from e
+
     async def setup(self):
         """Setup method is called after the addon is registered"""
         return
