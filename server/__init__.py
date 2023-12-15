@@ -16,6 +16,7 @@ from ayon_server.lib.postgres import Postgres
 from ayon_server.types import Field, OPModel
 
 from .settings import ImportSettings
+from .version import __version__
 
 
 class JobSummaryModel(OPModel):
@@ -31,7 +32,7 @@ class JobSummaryModel(OPModel):
 class OpenPypeImportAddon(BaseServerAddon):
     name = "openpype_import"
     title = "OpenPype import"
-    version = "0.2.3"
+    version = __version__
     settings_model: Type[ImportSettings] = ImportSettings
 
     frontend_scopes: dict[str, Any] = {"settings": {}}
@@ -40,6 +41,12 @@ class OpenPypeImportAddon(BaseServerAddon):
     def initialize(self):
         self.add_endpoint("import", self.import_project, method="POST")
         self.add_endpoint("list", self.list_jobs, method="GET")
+
+        private_dir = os.path.join(self.addon_dir, "private")
+        try:
+            os.makedirs(private_dir, exist_ok=True)
+        except Exception as e:
+            raise AyonException("Failed to create private dir") from e
 
     async def setup(self):
         """Setup method is called after the addon is registered"""
@@ -70,7 +77,6 @@ class OpenPypeImportAddon(BaseServerAddon):
         LIMIT 30
         """
         async for row in Postgres.iterate(query):
-
             description = row["process_description"] or row["upload_description"]
             status = row["process_status"]
             if not status:
