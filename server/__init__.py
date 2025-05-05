@@ -15,8 +15,6 @@ from ayon_server.exceptions import AyonException, BadRequestException
 from ayon_server.lib.postgres import Postgres
 from ayon_server.types import Field, OPModel
 
-from .settings import ImportSettings
-
 
 class JobSummaryModel(OPModel):
     project: str = Field(..., title="Project name")
