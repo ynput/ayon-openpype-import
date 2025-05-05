@@ -1,13 +1,11 @@
-FROM python:3.11
+FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1
 
-RUN pip install poetry
-
-RUN mkdir /service
-COPY . /service
 WORKDIR /service
+COPY ./pyproject.toml ./uv.lock .
 
-RUN poetry config virtualenvs.create false \
- && poetry install --no-interaction --no-ansi
+RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
+    uv pip install -r pyproject.toml --system
 
+COPY processor/ .
 CMD ["python", "-m", "processor"]

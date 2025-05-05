@@ -29,12 +29,9 @@ class JobSummaryModel(OPModel):
 
 
 class OpenPypeImportAddon(BaseServerAddon):
-    name = "openpype_import"
-    title = "OpenPype import"
-    version = "0.2.3"
-    settings_model: Type[ImportSettings] = ImportSettings
+    settings_model = None
 
-    frontend_scopes: dict[str, Any] = {"settings": {}}
+    frontend_scopes = {"settings": {}}
     services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:0.2.3"}}
 
     def initialize(self):
