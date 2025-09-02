@@ -7,5 +7,5 @@ COPY ./pyproject.toml ./uv.lock .
 RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
     uv pip install -r pyproject.toml --system
 
-COPY processor/ .
+COPY ./processor /service/processor
 CMD ["python", "-m", "processor"]
