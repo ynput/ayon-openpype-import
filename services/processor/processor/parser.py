@@ -252,7 +252,7 @@ def create_sqlite_db(source_path: str, sqlite_path: str) -> str:
             """
             DELETE FROM entities
             WHERE type = 'representation'
-            AND parent NOT IN (SELECT id FROM entities WHERE type = 'version')
+            AND parent NOT IN (SELECT id FROM entities WHERE type IN ('version', 'hero_version'))
             """
         )
 

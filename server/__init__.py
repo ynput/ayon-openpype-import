@@ -15,8 +15,6 @@ from ayon_server.exceptions import AyonException, BadRequestException
 from ayon_server.lib.postgres import Postgres
 from ayon_server.types import Field, OPModel
 
-from .settings import ImportSettings
-
 
 class JobSummaryModel(OPModel):
     project: str = Field(..., title="Project name")
@@ -29,13 +27,10 @@ class JobSummaryModel(OPModel):
 
 
 class OpenPypeImportAddon(BaseServerAddon):
-    name = "openpype_import"
-    title = "OpenPype import"
-    version = "0.2.3"
-    settings_model: Type[ImportSettings] = ImportSettings
+    settings_model = None
 
-    frontend_scopes: dict[str, Any] = {"settings": {}}
-    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:0.2.3"}}
+    frontend_scopes = {"settings": {}}
+    services = {"OpenpypeImport": {"image": "ynput/ayon-openpype-import:0.3.0"}}
 
     def initialize(self):
         self.add_endpoint("import", self.import_project, method="POST")
